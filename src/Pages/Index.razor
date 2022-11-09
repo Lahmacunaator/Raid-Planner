@@ -1,0 +1,44 @@
+﻿@page "/"
+@using Microsoft.AspNetCore.Http
+@inject IJSRuntime JsRuntime
+@inject IHttpContextAccessor httpContextAccessor
+@inject BlazorLoginDiscord.Data.UserService usrSvc
+
+<AuthorizeView>
+    <Authorized>
+        <div id="unity-container" class="unity-desktop">
+            <canvas id="unity-canvas" width=100vw height=100vh ></canvas>
+            <div id="unity-loading-bar">
+                <div id="unity-logo"></div>
+                <div id="unity-progress-bar-empty">
+                    <div id="unity-progress-bar-full"></div>
+                </div>
+            </div>
+            <div id="unity-warning"> </div>
+            <div id="unity-footer">
+                <div id="unity-fullscreen-button"></div>
+                <div id="unity-build-title"></div>
+            </div>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <a href="Account/Login">Log in</a>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code
+{
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+            SendGoodiesToUnity();
+    }
+
+    private async Task SendGoodiesToUnity()
+    {
+        var claim = usrSvc.GetInfo(httpContextAccessor.HttpContext);
+        var json = System.Text.Json.JsonSerializer.Serialize(claim);
+        await JsRuntime.InvokeAsync<string>("sendUserData", json);
+        
+    }
+}
